@@ -2,19 +2,19 @@
 
 services:
   mongodb:
-    image: mongo:latest
-    container_name: mongodb
+    image: mongo:6.0 
+    container_name: mongodb_container
     ports:
-      - "27017:27017"
+      - "27017:27017" 
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: admin123
     volumes:
-      - mongo_data:/data/db
+      - mongodb_data:/data/db
 
   redis:
     image: redis
-    container_name: redis
+    container_name: redis_container
     restart: always
     ports:
       - "6379:6379"
@@ -30,7 +30,7 @@ services:
 
   kafka:
       image: confluentinc/cp-kafka:latest
-      container_name: kafka
+      container_name: kafka_container
       ports:
         - "9092:9092"
       environment:
@@ -43,4 +43,4 @@ services:
         - zookeeper
 
 volumes:
-  mongo_data:
+  mongodb_data:

@@ -27,7 +27,7 @@ public class SeatCheckingService : ISeatCheckingService
             .FirstOrDefaultAsync();
 
         bool isAvailable = seat?.IsAvailable ?? false;
-        await _cacheHelper.SetAsync(cacheKey, isAvailable, TimeSpan.FromMinutes(10)); // Cache 10 phút
+        await _cacheHelper.SetAsync(cacheKey, isAvailable, TimeSpan.FromMinutes(10)); 
         return isAvailable;
     }
 }
