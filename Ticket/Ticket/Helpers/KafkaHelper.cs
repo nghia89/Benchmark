@@ -8,12 +8,10 @@ using Confluent.Kafka;
 public class KafkaHelper : IKafkaHelper
 {
     private readonly IProducer<Null, string> _producer;
-    private readonly ConsumerConfig _consumerConfig;
 
-    public KafkaHelper(ProducerConfig producerConfig, ConsumerConfig consumerConfig)
+    public KafkaHelper(ProducerConfig producerConfig)
     {
         _producer = new ProducerBuilder<Null, string>(producerConfig).Build();
-        _consumerConfig = consumerConfig;
     }
 
     public async Task ProduceAsync<T>(string topic, T message)
@@ -30,30 +28,50 @@ public class KafkaHelper : IKafkaHelper
             Console.WriteLine($"Error producing message: {ex.Error.Reason}");
         }
     }
-
-    public async Task ConsumeAsync(string topic, Func<string, Task> messageHandler)
+    public async Task ConsumeAsync(string topic,string groupId, Func<string, Task> handleMessage, CancellationToken stoppingToken)
     {
-        using var consumer = new ConsumerBuilder<Null, string>(_consumerConfig).Build();
+        var config = new ConsumerConfig
+        {
+            BootstrapServers = "localhost:9092",
+            GroupId = groupId,
+            AutoOffsetReset = AutoOffsetReset.Earliest,
+        };
 
+        using var consumer = new ConsumerBuilder<string, string>(config).Build();
         consumer.Subscribe(topic);
 
         try
         {
-            while (true)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                var consumeResult = consumer.Consume();
+                try
+                {
+                    // Consume message
+                    var result = consumer.Consume(stoppingToken);
 
-                // Xử lý tin nhắn
-                await messageHandler(consumeResult.Message.Value);
+                    if (result != null)
+                    {
+                        // Handle message
+                        await handleMessage(result.Message.Value);
+
+                        // Commit offset sau khi xử lý thành công
+                        consumer.Commit(result);
+                    }
+                }
+                catch (ConsumeException ex)
+                {
+                    Console.WriteLine($"Consume error: {ex.Error.Reason}");
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("Consumer operation canceled.");
+                    break;
+                }
             }
-        }
-        catch (OperationCanceledException)
-        {
-            consumer.Close();
         }
         finally
         {
-            consumer.Close();
+            consumer.Close(); // Đảm bảo consumer được đóng
         }
     }
 }

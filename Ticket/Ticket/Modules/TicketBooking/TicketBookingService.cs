@@ -43,7 +43,7 @@ public class TicketBookingService : ITicketBookingService
             await _ticketCollection.InsertOneAsync(ticket);
 
             // Gửi sự kiện đặt vé vào Kafka
-            await _kafkaHelper.ProduceAsync("TicketBooking", new { TrainId = trainId, Date = date, SeatNumber = seatNumber, UserId = userId });
+            await _kafkaHelper.ProduceAsync("ticket_booking", new { TrainId = trainId, Date = date, SeatNumber = seatNumber, UserId = userId });
 
             // Cập nhật cache
             await _cacheHelper.SetAsync(cacheKey, false, TimeSpan.FromMinutes(10)); // Đặt trạng thái là đã đặt

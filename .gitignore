@@ -1,3 +1,14 @@
-﻿
-/Ticket/Ticket/bin
+﻿/.vs
+/*/*/bin
+/*/*/obj
+*.user
+/Ticket/*/node_modules
+/Ticket/*/.vs
+/ngrok.exe
+.DS_Store
+antifacts
+*.userprefs
+/mongo.txt
+/.idea
 /Ticket/Ticket/obj
+/Ticket/Ticket/bin

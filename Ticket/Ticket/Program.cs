@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 using StackExchange.Redis;
+using Ticket.BackgroundService;
 using Ticket.Helpers;
 using Ticket.Modules.SeatChecking;
 using Ticket.Modules.TicketBooking;
@@ -40,16 +41,13 @@ var kafkaProducerConfig = new ProducerConfig
     BootstrapServers = "localhost:9092",  
 };
 
-var kafkaConsumerConfig = new ConsumerConfig
-{
-    BootstrapServers = "localhost:9092",
-    GroupId = "my-consumer-group",
-    AutoOffsetReset = AutoOffsetReset.Earliest, 
-};
-
 builder.Services.AddSingleton(kafkaProducerConfig);
-builder.Services.AddSingleton(kafkaConsumerConfig);
-builder.Services.AddScoped<IKafkaHelper, KafkaHelper>();
+
+builder.Services.AddSingleton<IKafkaHelper, KafkaHelper>();
+
+builder.Services.AddSingleton<IKafkaConsumerService, BookingConsumerService>();
+builder.Services.AddSingleton<ITicketBookingConsumerService, TicketBookingConsumerService>();
+builder.Services.AddHostedService<KafkaConsumersHostedService>();
 
 #endregion
 
@@ -61,7 +59,6 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 });
 
 builder.Services.AddScoped<IRedisCacheHelper, RedisCacheHelper>();
-
 #endregion
 
 #region Add services
